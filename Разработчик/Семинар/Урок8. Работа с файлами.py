@@ -22,7 +22,7 @@ def work_with_phonebook():
     phone_book = read_txt('file1.txt')
 
 
-    while (choice!=7):
+    while (choice!=9):
 
         if choice==1:
             print_result(phone_book)
@@ -38,12 +38,21 @@ def work_with_phonebook():
             new_number = input('Введите телефон:  ')
             new_opicanie = input('Введите описание:  ')
             print(add_user(phone_book,new_fem, new_name, new_number, new_opicanie))
-        elif choice==5:
+        
+        elif choice == 5:
+            name_or_lastname = input('Введите имя или фамилию для изменения: ')
+            print(update_entry(phone_book, name_or_lastname))
+        elif choice == 6:
+            name_or_lastname = input('Введите имя или фамилию для удаления: ')
+            print(delete_entry(phone_book, name_or_lastname))
+        
+        elif choice==7:
             write_txt('phonebook.txt',phone_book)
             print("Данные сохранены в файл phonebook.txt")
 
-        elif choice==6:
+        elif choice==8:
             print("Работа завершена.")
+            break
 
 
         choice=show_menu()
@@ -55,10 +64,13 @@ def show_menu():
           "2. Найти абонента по фамилии\n"
           "3. Найти абонента по номеру телефона\n"
           "4. Добавить абонента в справочник\n"
-          "5. Сохранить справочник в текстовом формате\n"
-          "6. Закончить работу")
+          "5. Изменить запись\n"
+          "6. Удалить запись\n"
+          "7. Сохранить справочник в текстовом формате\n"
+          "8. Закончить работу")
     choice = int(input())
     return choice
+
 
 # Чтение данных из текстового файла
 def read_txt(filename): 
@@ -71,20 +83,33 @@ def read_txt(filename):
            phone_book.append(record)	
     return phone_book
 
+
 # Вывод всех записей справочника
 def print_result(phone_book):
     for entry in phone_book:
-        print(', '.join(f"{key}: {value}" for key, value in entry.items()))
+        print('| '.join(f"{key}: {value}" for key, value in entry.items()))
+
 
 # Поиск записи по фамилии
 def find_by_lastname(phone_book, last_name):
-    result = [entry for entry in phone_book if entry['Фамилия'].strip() == last_name]
-    return result if result else "Запись не найдена."
+    result = [entry for entry in phone_book if entry['Фамилия'].strip().lower() == last_name.strip().lower()]
+
+    if not result:
+        return "Запись не найдена."
+    
+    formatted_results = '\n'.join('| '.join(f"{key}: {value}" for key, value in entry.items()) for entry in result)
+    return formatted_results
 
 # Поиск записи по номеру телефона
 def find_by_number(phone_book, number):
-    result = [entry for entry in phone_book if entry['Телефон'].strip() == number]
-    return result if result else "Запись не найдена."
+    result = [entry for entry in phone_book if entry['Телефон'].strip() == number.strip()]
+
+    if not result:
+        return "Запись не найдена."
+
+    formatted_results = '\n'.join('| '.join(f"{key}: {value}" for key, value in entry.items()) for entry in result)
+    return formatted_results
+  
 
 
 # Добавление новой записи в справочник
@@ -99,14 +124,55 @@ def add_user(phone_book, new_fem, new_name, new_number, new_opicanie):
      return "Запись успешно добавлена в справочник."
 
 
+# Функция изменения данных по имени или фамилии
+def update_entry(phone_book, name_or_lastname):
+    found_entries = []
+    for entry in phone_book:
+        if entry['Фамилия'].lower() == name_or_lastname.strip().lower() or entry['Имя'].lower() == name_or_lastname.strip().lower():
+            found_entries.append(entry)
+
+    if not found_entries:
+        return "Запись не найдена."
+
+    print("Найденные записи:")
+    for i, entry in enumerate(found_entries, start=1):
+        print(f"{i}. {entry['Фамилия']} {entry['Имя']}")
+
+    choice = int(input("Введите номер записи для изменения: "))
+    if 1 <= choice <= len(found_entries):
+        entry_to_update = found_entries[choice - 1]
+        new_number = input("Введите новый номер телефона: ")
+        new_description = input("Введите новое описание: ")
+
+        entry_to_update['Телефон'] = new_number.strip()
+        entry_to_update['Описание'] = new_description.strip()
+
+        return "Запись успешно изменена."
+    else:
+        return "Некорректный выбор номера записи."
 
 
-# def write_txt(filename, phone_book):
-#     # Запись данных в текстовый файл
-#     with open(filename, 'w', encoding='utf-8') as phout:
-#         for entry in phone_book:
-#             # Записываем каждую запись в файл
-#             phout.write(','.join(entry.values()) + '\n')
+
+# Функция удаления данных по имени или фамилии
+def delete_entry(phone_book, name_or_lastname):
+    found_entries = []
+    for entry in phone_book:
+        if entry['Фамилия'].lower() == name_or_lastname.strip().lower() or entry['Имя'].lower() == name_or_lastname.strip().lower():
+            found_entries.append(entry)
+
+    if not found_entries:
+        return "Запись не найдена."
+
+    print("Найденные записи:")
+    for i, entry in enumerate(found_entries, start=1):
+        print(f"{i}. {entry['Фамилия']} {entry['Имя']}")
+
+    choice = int(input("Введите номер записи для удаления: "))
+    if 1 <= choice <= len(found_entries):
+        phone_book.remove(found_entries[choice - 1])
+        return "Запись успешно удалена."
+    else:
+        return "Некорректный выбор номера записи."
 
 
 # Запись данных в текстовый файл
@@ -120,8 +186,4 @@ def write_txt(filename , phone_book):
 
 
 
-
-
 work_with_phonebook()
-
-
